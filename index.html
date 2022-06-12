@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HW-Questions</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        fetch('http://localhost:3007')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data)
+                for (let i = 0; i < data.length; i++) {
+                    let style
+                    switch(data[i].status) {
+                        case 'Вопрос открыт':
+                            style = 'red'
+                            break
+                        case 'Разобрался':
+                            style = 'green'
+                            break
+                        case 'Не очень':
+                            style = 'grey'
+                            break
+                    }
+                    document.getElementById("box").insertAdjacentHTML(
+                        "beforeend", `
+                        <div class="wrap">
+                            <div class="question">${data[i].question}</div>
+                            <div style="color: ${style}">${data[i].status}</div>
+                        </div>
+
+                `)
+                }
+            });
+    </script>
+</head>
+<body>
+    <div id="box"></div>
+</body>
+</html>
