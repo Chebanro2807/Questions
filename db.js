@@ -1,28 +1,35 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const { MongoClient, ObjectId } = require("mongodb");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const port = 80;
 const app = express();
-const port = 3007;
-
 app.use(cors());
-app.get('/', (req, res) => {
-    const uri = "mongodb+srv://admin:admin@cluster0.o7ase.mongodb.net/?retryWrites=true&w=majority";
-    const client = new MongoClient(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        serverApi: ServerApiVersion.v1,
-    });
-    client.connect((err) => {
-        const collection = client.db('interview-questions').collection('list');
-        collection
-            .find({})
-            .toArray()
-            .then((data) => {
-                res.send(data);
-                client.close();
-            });
+
+
+app.use(bodyParser.json());
+
+const uri = "mongodb+srv://admin:admin@cluster0.o7ase.mongodb.net/?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const collection = client.db("interview-questions").collection("list");
+
+app.get("/list", (req, res) => {
+    client.connect(async (err) => {
+        res.send(await collection.find({}).toArray());
+        client.close();
     });
 });
+
+
+app.patch("/status", (req, res) => {
+    client.connect(async (err) => {
+        const { id, status } = req.body;
+        const updateResult = collection.updateOne({ _id: ObjectId(id) }, { $set: { status: status } });
+        res.send(await updateResult);
+        client.close();
+    });
+});
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

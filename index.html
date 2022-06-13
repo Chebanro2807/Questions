@@ -6,12 +6,11 @@
     <title>HW-Questions</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        fetch('http://localhost:3007')
+        fetch('http://localhost:80/list')
             .then((response) => {
                 return response.json();
             })
             .then((data) => {
-                console.log(data)
                 for (let i = 0; i < data.length; i++) {
                     let style
                     switch(data[i].status) {
@@ -24,17 +23,40 @@
                         case 'Не очень':
                             style = 'grey'
                             break
+                        default: style = 'grey'
                     }
                     document.getElementById("box").insertAdjacentHTML(
                         "beforeend", `
-                        <div class="wrap">
-                            <div class="question">${data[i].question}</div>
-                            <div style="color: ${style}">${data[i].status}</div>
-                        </div>
-
+                            <div data-questionId="${data[i]._id}" class="question">${data[i].question}</div>
+                            <div data-status="${data[i].status}" style="color: ${style}">${data[i].status}</div>
                 `)
                 }
+                getListWithFetch()
             });
+
+
+        function getListWithFetch () {
+            let questions = document.querySelectorAll(".question")
+            questions.forEach((elem)=>{
+                elem.onclick = function (){
+                    const data = {
+                        status: "Разобрался",
+                        _id: this.dataset.questionid
+                    }
+                    fetch('http://localhost:80/status',{
+                        method: 'PATCH',
+                        body: JSON.stringify(data),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }).then((res)=>{console.log(res)})
+                    .then((el)=>{
+                        console.log(el)
+                        document.location.reload()
+                    })
+                }
+            })
+        }
     </script>
 </head>
 <body>
