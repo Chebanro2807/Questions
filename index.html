@@ -6,11 +6,30 @@
     <title>HW-Questions</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        function render(){
-            fetch('http://localhost:80/list')
-                .then((response) => {
-                    return response.json();
+
+        function getListWithFetch(url, route, method, data='') {
+            if (method === 'GET') {
+                return fetch(url + '/' + route)
+                    .then((response) => {
+                        return response.json()
+                    })
+                    .then((data) => {
+                        return data;
+                    })
+            }
+            if (method === 'PATCH'){
+                return fetch(url + '/' + route, {
+                    method: method,
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                 })
+            }
+        }
+
+        function render(){
+            getListWithFetch('http://localhost:80', 'list', 'GET')
                 .then((data) => {
                     document.getElementById("box").innerHTML =
                         `
@@ -22,7 +41,8 @@
 
                             <div data-status="${data[2].status}" data-questionId="${data[2]._id}" class="question">${data[2].question}</div>
                             <div style="color: ${setColor(data[2].status)}">${data[2].status}</div>`
-                }).then(()=>{
+                })
+                .then(()=>{
                 document.querySelectorAll('.question').forEach((el)=>{
                     el.addEventListener('click',(e)=>{
                         let st
@@ -38,13 +58,8 @@
                             identificator: e.target.dataset.questionid
                         }
 
-                        fetch('http://localhost:80/status',{
-                            method: 'PATCH',
-                            body: JSON.stringify(data),
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        }).then(()=>{render()})
+                        getListWithFetch('http://localhost:80', 'status', 'PATCH', data)
+                        .then(()=>{render()})
                     })
                 })
             })
