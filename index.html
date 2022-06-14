@@ -6,57 +6,67 @@
     <title>HW-Questions</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        fetch('http://localhost:80/list')
-            .then((response) => {
-                return response.json();
-            })
-            .then((data) => {
-                for (let i = 0; i < data.length; i++) {
-                    let style
-                    switch(data[i].status) {
-                        case 'Вопрос открыт':
-                            style = 'red'
-                            break
-                        case 'Разобрался':
-                            style = 'green'
-                            break
-                        case 'Не очень':
-                            style = 'grey'
-                            break
-                        default: style = 'grey'
-                    }
-                    document.getElementById("box").insertAdjacentHTML(
-                        "beforeend", `
-                            <div data-questionId="${data[i]._id}" class="question">${data[i].question}</div>
-                            <div data-status="${data[i].status}" style="color: ${style}">${data[i].status}</div>
-                `)
-                }
-                getListWithFetch()
-            });
+        function render(){
+            fetch('http://localhost:80/list')
+                .then((response) => {
+                    return response.json();
+                })
+                .then((data) => {
+                    document.getElementById("box").innerHTML =
+                        `
+                            <div data-status="${data[0].status}" data-questionId="${data[0]._id}" class="question">${data[0].question}</div>
+                            <div style="color: ${setColor(data[0].status)}">${data[0].status}</div>
 
+                            <div data-status="${data[1].status}" data-questionId="${data[1]._id}" class="question">${data[1].question}</div>
+                            <div style="color: ${setColor(data[1].status)}">${data[1].status}</div>
 
-        function getListWithFetch () {
-            let questions = document.querySelectorAll(".question")
-            questions.forEach((elem)=>{
-                elem.onclick = function (){
-                    const data = {
-                        status: "Разобрался",
-                        _id: this.dataset.questionid
-                    }
-                    fetch('http://localhost:80/status',{
-                        method: 'PATCH',
-                        body: JSON.stringify(data),
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }).then((res)=>{console.log(res)})
-                    .then((el)=>{
-                        console.log(el)
-                        document.location.reload()
+                            <div data-status="${data[2].status}" data-questionId="${data[2]._id}" class="question">${data[2].question}</div>
+                            <div style="color: ${setColor(data[2].status)}">${data[2].status}</div>`
+                }).then(()=>{
+                document.querySelectorAll('.question').forEach((el)=>{
+                    el.addEventListener('click',(e)=>{
+                        let st
+                        if (e.target.dataset.status === "Вопрос открыт") {
+                            st = 'Разобрался'
+                        } else if (e.target.dataset.status === 'Разобрался') {
+                            st = 'Не очень'
+                        } else {
+                            st = "Вопрос открыт"
+                        }
+                        const data = {
+                            status: st,
+                            identificator: e.target.dataset.questionid
+                        }
+
+                        fetch('http://localhost:80/status',{
+                            method: 'PATCH',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }).then(()=>{render()})
                     })
-                }
+                })
             })
         }
+
+        function setColor(current){
+            let style
+            switch(current) {
+                case 'Вопрос открыт':
+                    style = 'red'
+                    break
+                case 'Разобрался':
+                    style = 'green'
+                    break
+                case 'Не очень':
+                    style = 'grey'
+                    break
+                default: style = 'grey'
+            }
+            return style
+        }
+        render()
     </script>
 </head>
 <body>
